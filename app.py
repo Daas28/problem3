@@ -1,7 +1,12 @@
 import streamlit as st
 import torch
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# Debug info
+st.write("Working directory:", os.getcwd())
+st.write("Files in directory:", os.listdir())
 
 class DigitGenerator(torch.nn.Module):
     def __init__(self):
@@ -20,31 +25,44 @@ class DigitGenerator(torch.nn.Module):
 
 @st.cache_resource
 def load_model():
-    model = DigitGenerator()
-    model.load_state_dict(torch.load('mnist_generator.pth', map_location='cpu'))
-    model.eval()
-    return model
+    try:
+        model = DigitGenerator()
+        model.load_state_dict(torch.load('mnist_generator.pth', map_location='cpu'))
+        model.eval()
+        st.success("Model loaded successfully!")
+        return model
+    except Exception as e:
+        st.error(f"Model loading failed: {str(e)}")
+        return None
 
-def generate_images(model, num=5):
-    images = []
-    for i in range(num):
-        with torch.no_grad():
-            noise = torch.randn(1, 100)
-            img = model(noise).squeeze().numpy()
-            images.append(img)
-    return images
-
-model = load_model()
-st.title('Générateur de Chiffres MNIST')
-
-digit = st.selectbox('Choisir un chiffre (0-9)', range(10))
-if st.button('Générer'):
-    images = generate_images(model)
+def main():
+    st.title("MNIST Digit Generator")
     
-    cols = st.columns(5)
-    for i, img in enumerate(images):
-        with cols[i]:
-            fig, ax = plt.subplots()
-            ax.imshow(img, cmap='gray')
-            ax.axis('off')
-            st.pyplot(fig)
+    model = load_model()
+    if model is None:
+        st.stop()
+    
+    digit = st.selectbox("Select digit (0-9):", range(10))
+    
+    if st.button("Generate"):
+        with st.spinner("Generating..."):
+            try:
+                images = []
+                for _ in range(5):
+                    noise = torch.randn(1, 100)
+                    with torch.no_grad():
+                        img = model(noise).squeeze().numpy()
+                    images.append(img)
+                
+                cols = st.columns(5)
+                for i, img in enumerate(images):
+                    with cols[i]:
+                        fig, ax = plt.subplots()
+                        ax.imshow(img, cmap='gray')
+                        ax.axis('off')
+                        st.pyplot(fig)
+            except Exception as e:
+                st.error(f"Generation failed: {str(e)}")
+
+if __name__ == "__main__":
+    main()
