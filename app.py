@@ -27,7 +27,7 @@ class DigitGenerator(torch.nn.Module):
 def load_model():
     try:
         model = DigitGenerator()
-        model.load_state_dict(torch.load('mnist_generator.pth', map_location='cpu'))
+        model.load_state_dict(torch.load('streamlit_app.py', map_location='cpu'))
         model.eval()
         st.success("Model loaded successfully!")
         return model
