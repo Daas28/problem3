@@ -33,4 +33,4 @@ def train_model():
             # Training code here
             pass
             
-    torch.save(generator.state_dict(), 'mnist_generator.pth')
+    torch.save(generator.state_dict(), 'streamlit_app.py')
